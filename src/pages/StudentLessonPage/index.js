@@ -38,6 +38,7 @@ export const StudentLessonPage = () => {
   const [note, setNote] = useState('');
   const [notes, setNotes] = useState([]);
   const { user, refreshUserOnContext, token, logged } = useAuthContext();
+  const [userData, setUserData] = useState();
 
   const notifySuccess = (texto) => toast.success(texto, {
     position: "top-right",
@@ -63,7 +64,11 @@ export const StudentLessonPage = () => {
 
   const navigate = useNavigate();
 
+
   React.useEffect(() => {
+    if(user){
+      setUserData(user)
+    }
     if (lesson && lesson.users_who_completed && user)
       if (lesson.users_who_completed.includes(user.id) && lesson.professor !== user.id)
         setVideoPlayer({ ...videoPlayer, completed: true })
@@ -180,8 +185,9 @@ export const StudentLessonPage = () => {
   }
 
   const fetchAnotations = async () => {
-    console.log(user.id)
-    const url = `${BASE_URL}/anotation/list-notes-lesson/${user.id}/${id}/`;
+    if(userData){
+    //console.log(user.id)
+    const url = `${BASE_URL}/anotation/list-notes-lesson/${userData.id}/${id}/`;
     var errorMessage;
     try {
       const options = {
@@ -208,6 +214,7 @@ export const StudentLessonPage = () => {
       return new HttpResponse(HttpStatus.ERROR, errorMessage);
     }
   }
+}
 
   const requestNotes = async () => {
     const listNotes = await fetchAnotations();
