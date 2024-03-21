@@ -79,7 +79,7 @@ export const StudentLessonPage = () => {
     const verifyPermissions = async (courseId) => {
       const response = await LessonAPI.getCourse(lesson.course);
       const course = response.data;
-      const isEnrolled = course.students.map(c => c.id).includes(user.id)
+      const isEnrolled = !!user.id && course.students.map(c => c.id).includes(user.id)
       setControle({ enrolled: isEnrolled })
     }
 
@@ -371,6 +371,12 @@ export const StudentLessonPage = () => {
               <span className='flag-is-professor'>Você é o professor desta aula</span>
             </Col>
           }
+          {
+            controle.enrolled == false && !isProfessorOfLessonCourse() && 
+            <Col xs={12} style={{ marginTop: '0.5rem' }}>
+              <span className='flag-not-enrolled'>Você não está inscrito neste curso!</span>
+            </Col>
+          }
           <Col xs={12}>
             <h1 style={{ fontWeight: 'bold' }}>{lesson.title}</h1>
           </Col>
@@ -387,21 +393,21 @@ export const StudentLessonPage = () => {
               {(!videoPlayer.playing || !lesson.banner) && lesson.video && <BsFillPlayFill onClick={handleVideoOnPlay} style={{ fontSize: '5rem', color: '#0E6216', position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%, -50%)', cursor: 'pointer' }} />}
             </section>}
           </Col>
-          {logged && controle.enrolled &&
+          {logged &&
             <Row className='buttons'>
-                {
-                  <Button className='btn-resources' style={{ marginRight: '1rem', fontWeight: '600', backgroundColor: '#0E6216', borderColor: '#0E6216', borderRadius: '10px', width: '230px', height: '39px'}} onClick={() => anotar()}>Fazer Anotação <FontAwesomeIcon icon={faPen} /></Button>
+                { controle.enrolled && 
+                  <Button className='btn-resources' style={{ display: 'none', marginRight: '1rem', fontWeight: '600', backgroundColor: '#0E6216', borderColor: '#0E6216', borderRadius: '10px', width: '230px', height: '39px'}} onClick={() => anotar()}>Fazer Anotação <FontAwesomeIcon icon={faPen} /></Button>
                 }
                 {
-                  !!lesson.appendix &&
+                  (controle.enrolled || isProfessorOfLessonCourse()) && !!lesson.appendix &&
                   <Button className='btn-resources' onClick={() => window.open(lesson.appendix, '_blank')} style={{marginRight: '1rem', fontWeight: '600', backgroundColor: '#0E6216', borderColor: '#0E6216', borderRadius: '10px', width: '230px', height: '39px'}}>Arquivo de apoio <HiDownload style={{ fontSize: '20px' }} /> </Button>
                 }
                 {
-                  !!lesson.extern_appendix_link.trim().length &&
+                  (controle.enrolled || isProfessorOfLessonCourse()) && !!lesson.extern_appendix_link.trim().length &&
                   <Button className='btn-resources' onClick={() => window.open(lesson.extern_appendix_link, '_blank')} style={{marginRight: '1rem', fontWeight: '600', backgroundColor: '#0E6216', borderColor: '#0E6216', borderRadius: '10px', width: '230px', height: '39px'}}>Material de apoio <HiOutlineExternalLink style={{ fontSize: '20px' }} /> </Button>
                 }
                 {
-                  !lesson.video && !videoPlayer.completed && 
+                  controle.enrolled && !lesson.video && !videoPlayer.completed && 
                   <Button className='btn-resources' onClick={completeStudentLesson} style={{marginRight: '1rem', fontWeight: '600', backgroundColor: '#0E6216', borderColor: '#0E6216', borderRadius: '10px', width: '230px', height: '39px'}}>Concluir aula </Button>
                 }
             </Row>
@@ -410,20 +416,32 @@ export const StudentLessonPage = () => {
             <p style={{ textAlign: 'justify' }}>{lesson.content}</p>
           </Col>
           {(controle.enrolled || isProfessorOfLessonCourse()) &&
-            <Col xs={12} className="mb-4">
+            <Col xs={12} className="mb-4" style={{display: 'none'}}>
               <QuestionCourse dataLesson={lesson} />
             </Col>
           }
-          {logged &&
-            <Col xs={12}>
-              <section style={{ display: 'flex', justifyContent: 'space-between' }}>
-                {lesson.prev && <LinkLesson title={lesson.prev.title} link={`/student/lessons/${lesson.prev.id}`} image={lesson.prev.banner} inverse />}
-                <Button className='button-all-lesson' onClick={() => navigate(`/student/courses/${lesson.course}`)}>
+          {logged && 
+            <Row className="d-flex justify-content-between">
+              { lesson.prev && 
+                <Col xs={12} lg={4}>
+                  <Button className='button-navigate' style={{width: '100%'}} onClick={() => navigate(`/student/lessons/${lesson.prev.id}`)}>
+                    Aula anterior
+                  </Button>
+                </Col>
+              }
+              <Col xs={12} lg={4}>
+                <Button className='button-navigate' style={{width: '100%'}} onClick={() => navigate(`/student/courses/${lesson.course}`)}>
                   Ver todas as aulas
                 </Button>
-                {lesson.next && <LinkLesson title={lesson.next.title} link={`/student/lessons/${lesson.next.id}`} image={lesson.next.banner} />}
-              </section>
-            </Col>
+              </Col>
+              { lesson.next && 
+                <Col xs={12} lg={4}>
+                  <Button className='button-navigate' style={{width: '100%'}} onClick={() => navigate(`/student/lessons/${lesson.next.id}`)}>
+                    Próxima aula
+                  </Button>
+                </Col>
+              }
+            </Row>
           }
           {notes && notes.length ?
             <Row>
@@ -461,21 +479,4 @@ export const StudentLessonPage = () => {
     </>
   )
     : logged ? <></> : <h3 className='mt-5 w-100 text-center'>Você precisar realizar login para ver os recursos da aula!</h3>;
-}
-
-const LinkLesson = ({ title, link, image, inverse }) => {
-  return (
-    <Link to={link} style={{ width: '37%' }}>
-      <article style={{ position: 'relative', borderRadius: '10px', overflow: 'hidden' }}>
-        <img alt='' src={image} style={{ width: '100%', filter: 'brightness(35%)', aspectRatio: '16/8' }} />
-
-        <div style={{ position: 'absolute', color: 'white', left: 0, top: 0, fontWeight: 'bold', textAlign: 'center', maxWidth: '100%', maxHeight: '100%', overflow: 'hidden', padding: '5px' }}>
-          {!inverse && <span>Próxima aula</span>}
-          {inverse && <span>Aula anterior</span>}
-          <br /><br />
-          <span>{title}</span>
-        </div>
-      </article>
-    </Link>
-  );
 }

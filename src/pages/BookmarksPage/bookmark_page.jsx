@@ -120,7 +120,7 @@ const BookmarksPage = () => {
 
             <Row className="home-card mt-5">
                 <div className="col">
-                    <h1 className="mb-3 fs-5 fw-bold">Booksmarks</h1>
+                    <h1 className="mb-3 fs-5 fw-bold">Cursos favoritos</h1>
 
                     {isFetched ? (
                         data.results.length ? (
@@ -136,7 +136,7 @@ const BookmarksPage = () => {
                         ) : (
                             <Container fluid>
                                 <div class="d-flex align-items-center justify-content-center" style={{"height": "350px"}}>
-                                    <span><h1>Você não tem nenhum curso marcado.</h1>
+                                    <span><h1>Você não tem nenhum curso marcado como favorito.</h1>
                                     <p className='fs-5' style={{ color: "#1dbfb0", cursor:"pointer" }} onClick={() => {navigate('/')}}>Clique aqui e procure algo do seu interesse <FontAwesomeIcon className='fs-5' style={{color:"yellow"}} icon={faHandPointLeft}/></p></span>
                                 </div>
                             </Container>

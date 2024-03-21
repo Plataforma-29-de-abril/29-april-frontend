@@ -130,11 +130,13 @@ const ProfessorCoursesPage = () => {
 
 
             </div>
+            { isFetched && amountPages > 1 &&
             <Row className='mt-5'>
                 <Col className='d-flex justify-content-center'>
                     {renderPagination()}
                 </Col>
             </Row>
+            }
         </>
     )
 }
